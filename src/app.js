@@ -15,8 +15,9 @@ const estimationCategoriesRouter = require('./routes/estimationCategory');
 const estimationsRouter = require('./routes/estimations');
 
 const app = express();
+const connectionString=`mongodb+srv://${process.env.MONGO_ATLAS_USERMAME}:${process.env.MONGO_ATLAS_PWD}@efinancetest.m4hngbn.mongodb.net/efinancetest?retryWrites=true&w=majority`;
 
-mongoose.connect('mongodb+srv://'+ process.env.MONGO_ATLAS_USERMAME +':' + process.env.MONGO_ATLAS_PWD + '@efinancetest.m4hngbn.mongodb.net/efinancetest?retryWrites=true&w=majority')
+mongoose.connect(connectionString)
   .then(() => {
     console.info("***** Database connected ********")
   })

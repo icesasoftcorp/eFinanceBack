@@ -17,7 +17,8 @@ exports.createEstimation = (req, res, next) => {
                 id: estimation._id,
             }
         });
-    }).catch( err => {
+    })
+    .catch( err => {
         res.status(500).json({
             message: err.message
         })
@@ -53,3 +54,23 @@ exports.retrieveEstimations = (req, res, next) => {
         });
     });
 };
+
+/**
+ * Delete estimation
+ */
+exports.deleteEstimation = (req, res, next) => {
+    const { id } = req.body;
+    Estimation.findByIdAndDelete({ _id: id })
+      .then((deleteEstimation) => {
+      //   console.log('deleteEstimation', deleteEstimation);
+        res.status(201).json({
+          message: 'The record has been deleted',
+          result: deleteEstimation,
+        });
+      })
+      .catch((err) => {
+        res.status(500).json({
+          message: err.message,
+        });
+      });
+  };

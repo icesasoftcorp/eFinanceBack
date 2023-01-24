@@ -71,3 +71,24 @@ exports.retrieveEstimationChildrenCategories = (req, res, next) => {
         });
     });
 }
+
+/**
+ * Delete estimation category
+ */
+exports.deleteEstimationCategory = (req, res, next) => {
+    const { id } = req.body;
+    EstimationCategory.findByIdAndDelete({ _id: id })
+      .then((deleteEstimationCategory) => {
+      //   console.log('deleteEstimationCategory', deleteEstimationCategory);
+        res.status(201).json({
+          message: 'The record has been deleted',
+          result: deleteEstimationCategory,
+        });
+      })
+      .catch((err) => {
+        res.status(500).json({
+          message: err.message,
+        });
+      });
+  };
+  

@@ -37,7 +37,15 @@ exports.createAccountCategory = (req, res, next) => {
 exports.retrieveAccountCategories = (req, res, next) => {
     const pageSize = + req.query.pageSize;
     const currentPage = + req.query.page;
-    const accountCategoryQuery = AccountCategory.findDefaultAndCustom();
+    const fieldSort = req.query.sort;
+    let arraySort=(fieldSort != undefined ? fieldSort : " ").split("~");
+    let sortJson={};
+    arraySort.forEach(e=>{
+        let arrayPrmSort=e.split("-");
+        let sortType = arrayPrmSort[1] == "asc" ? 1:-1;
+        sortJson[arrayPrmSort[0]] = sortType;
+    });
+    const accountCategoryQuery = AccountCategory.findDefaultAndCustom().sort(sortJson);
     let fetchedAccountCategories;
     if (currentPage && pageSize) {
         accountCategoryQuery.skip(pageSize *(currentPage - 1)).limit(pageSize);

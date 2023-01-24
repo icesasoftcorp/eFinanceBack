@@ -8,5 +8,6 @@ const router = express.Router();
  */
 router.post('', checkAuth, Estimation.createEstimation );
 router.get('', checkAuth, Estimation.retrieveEstimations );
+router.delete('', checkAuth, Estimation.deleteEstimation);
 
 module.exports = router;

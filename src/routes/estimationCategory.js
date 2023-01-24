@@ -8,5 +8,6 @@ const router = express.Router();
 router.post('', EstimationCategory.createEstimationCategory );
 router.get('', EstimationCategory.retrieveEstimationCategories );
 router.get('/:category/children', EstimationCategory.retrieveEstimationChildrenCategories);
+router.delete('', EstimationCategory.deleteEstimationCategory);
 
 module.exports = router;
