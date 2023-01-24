@@ -8,5 +8,6 @@ const router = express.Router();
  */
 router.post('', checkAuth, ExpenseController.createExpense);
 router.get('', checkAuth, ExpenseController.retrieveExpenses);
+router.post('/remove', checkAuth, ExpenseController.removeExpense);
 
 module.exports = router;

@@ -6,7 +6,7 @@ const Expense = require('../models/expense');
  * @param {*} res response
  * @param {*} next 
  */
-exports.createExpense= (req, res, next) => {
+exports.createExpense = (req, res, next) => {
     const expense = new Expense({
         title: req.body.title,
         description: req.body.description,
@@ -18,11 +18,11 @@ exports.createExpense= (req, res, next) => {
     expense.save().then(expense => {
         res.status(201).json({
             expense: {
-                ... expense,
+                ...expense,
                 id: expense._id,
             }
         });
-    }).catch( err => {
+    }).catch(err => {
         res.status(500).json({
             message: err.message
         })
@@ -39,24 +39,26 @@ exports.retrieveExpenses = (req, res, next) => {
     const today = new Date();
     const monthBeginning = new Date(today.getFullYear(), today.getMonth(), 1);
     const fieldSort = req.query.sort;
-    let arraySort=(fieldSort != undefined ? fieldSort : "").split("~");
-    let sortJson={};
-    arraySort.forEach(e=>{
-        let arrayPrmSort=e.split("-");
-        let sortType = arrayPrmSort[1] == "asc" ? 1:-1;
-        sortJson[arrayPrmSort[0]] = sortType;
+    let arraySort = (fieldSort != undefined ? fieldSort : "").split("~");
+    let sortJson = {};
+    arraySort.forEach(e => {
+        if (e != '') {
+            let arrayPrmSort = e.split("-");
+            let sortType = arrayPrmSort[1] == "asc" ? 1 : -1;
+            sortJson[arrayPrmSort[0]] = sortType;
+        }
     });
 
     const pageSize = + req.query.pageSize;
     const currentPage = + req.query.page;
-    const expenseQuery = Expense.find({creator: req.userData.userId, $lt: monthBeginning}).sort(sortJson);
+    const expenseQuery = Expense.find({ creator: req.userData.userId, $lt: monthBeginning }).sort(sortJson);
     let fetchedExpenses;
     if (currentPage && pageSize) {
-        expenseQuery.skip(pageSize *(currentPage - 1)).limit(pageSize);
+        expenseQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
     }
-    expenseQuery.then( documents => {
+    expenseQuery.then(documents => {
         fetchedExpenses = documents;
-        return Expense.find({creator: req.userData.userId, $lt: monthBeginning}).count();
+        return Expense.find({ creator: req.userData.userId, $lt: monthBeginning }).count();
     }).then(count => {
         res.status(200).json({
             expenses: fetchedExpenses,
@@ -67,5 +69,24 @@ exports.retrieveExpenses = (req, res, next) => {
         res.status(500).json({
             message: err.message
         });
+    });
+};
+/**
+ * Remove Expenses
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+exports.removeExpense = (req, res, next) => {
+    const id = req.body.id;
+    Expense.findByIdAndDelete({ _id: id }).then(data => {
+        res.status(200).json({
+            expense: data,
+            id: expense._id
+        });
+    }).catch(err => {
+        res.status(500).json({
+            message: err.message
+        })
     });
 };

@@ -13,14 +13,14 @@ exports.createExpenseCategory = (req, res, next) => {
         color: req.body.color,
         creator: req.userData.userId ? req.userData.userId : null
     });
-    expenseCategory.save().then(income => {
+    expenseCategory.save().then(expenseCategory => {
         res.status(201).json({
             expenseCategory: {
-                ... expenseCategory,
+                ...expenseCategory,
                 id: expenseCategory._id,
             }
         });
-    }).catch( err => {
+    }).catch(err => {
         res.status(500).json({
             message: err.message
         })
@@ -34,14 +34,24 @@ exports.createExpenseCategory = (req, res, next) => {
  * @param {*} next 
  */
 exports.retrieveExpenseCategories = (req, res, next) => {
+    const fieldSort = req.query.sort;
+    let arraySort = (fieldSort != undefined ? fieldSort : "").split("~");
+    let sortJson = {};
+    arraySort.forEach(e => {
+        if (e != '') {
+            let arrayPrmSort = e.split("-");
+            let sortType = arrayPrmSort[1] == "asc" ? 1 : -1;
+            sortJson[arrayPrmSort[0]] = sortType;
+        }
+    });
     const pageSize = + req.query.pageSize;
     const currentPage = + req.query.page;
-    const expenseCategoryQuery = ExpenseCategory.find();
+    const expenseCategoryQuery = ExpenseCategory.find({ creator: req.userData.userId }).sort(sortJson);
     let fetchedExpenseCategories;
     if (currentPage && pageSize) {
-        expenseCategoryQuery.skip(pageSize *(currentPage - 1)).limit(pageSize);
+        expenseCategoryQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
     }
-    expenseCategoryQuery.then( documents => {
+    expenseCategoryQuery.then(documents => {
         fetchedExpenseCategories = documents;
         return ExpenseCategory.count();
     }).then(count => {
@@ -53,5 +63,25 @@ exports.retrieveExpenseCategories = (req, res, next) => {
         res.status(500).json({
             message: err.message
         });
+    });
+};
+
+/**
+ * Remove Expense Categories
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+exports.removeExpenseCategories = (req, res, next) => {
+    const id = req.body.id;
+    ExpenseCategory.findByIdAndDelete({ _id: id }).then(data => {
+        res.status(200).json({
+            expense: data,
+            id: expense._id
+        });
+    }).catch(err => {
+        res.status(500).json({
+            message: err.message
+        })
     });
 };
