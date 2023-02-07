@@ -1,4 +1,6 @@
 const AccountCategory = require('../models/accountCategory');
+const DataSourceResult = require('../models/DataSourceResult');
+let dataSourceResult = new DataSourceResult();
 
 /**
  * Creates account category
@@ -12,16 +14,16 @@ exports.createAccountCategory = (req, res, next) => {
         title: req.body.title,
         icon: req.body.icon,
         color: req.body.color,
-        creator: req.userData.userId!=null ? req.userData.userId : null
+        creator: req.userData.userId != null ? req.userData.userId : null
     });
     accountCategory.save().then(income => {
         res.status(201).json({
             accountCategory: {
-                ... accountCategory,
+                ...accountCategory,
                 id: accountCategory._id,
             }
         });
-    }).catch( err => {
+    }).catch(err => {
         res.status(500).json({
             message: err.message
         })
@@ -29,15 +31,14 @@ exports.createAccountCategory = (req, res, next) => {
 };
 
 exports.deleteAccountCategory = (req, res, next) => {
-    const accountCategoryQuery = Account.findByDelete(req.userData.userId);
-    const account = Account(accountCategoryQuery);
-    account.then(resut => {
-        res.status(201).json({
+    AccountCategory.findByIdAndDelete({ _id: req.body.id }).then(result => {
+        res.status(200).json({
             account: {
-            message: "Account Category has been deleted",
+                result,
+                message: "Account Category has been deleted",
             }
         });
-    }).catch( err => {
+    }).catch(err => {
         res.status(500).json({
             message: err.message
         })
@@ -54,26 +55,30 @@ exports.retrieveAccountCategories = (req, res, next) => {
     const pageSize = + req.query.pageSize;
     const currentPage = + req.query.page;
     const fieldSort = req.query.sort;
-    let arraySort=(fieldSort != undefined ? fieldSort : " ").split("~");
-    let sortJson={};
-    arraySort.forEach(e=>{
-        let arrayPrmSort=e.split("-");
-        let sortType = arrayPrmSort[1] == "asc" ? 1:-1;
-        sortJson[arrayPrmSort[0]] = sortType;
+    let arraySort = (fieldSort != undefined ? fieldSort : "").split("~");
+    let sortJson = {};
+    arraySort.forEach(e => {
+        if (e != '') {
+            let arrayPrmSort = e.split("-");
+            let sortType = arrayPrmSort[1] == "asc" ? 1 : -1;
+            sortJson[arrayPrmSort[0]] = sortType;
+        }
     });
     const accountCategoryQuery = AccountCategory.findDefaultAndCustom().sort(sortJson);
     let fetchedAccountCategories;
     if (currentPage && pageSize) {
-        accountCategoryQuery.skip(pageSize *(currentPage - 1)).limit(pageSize);
+        accountCategoryQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
     }
-    accountCategoryQuery.then( documents => {
+    accountCategoryQuery.then(documents => {
         fetchedAccountCategories = documents;
         return AccountCategory.findDefaultAndCustom().count();
     }).then(count => {
-        res.status(200).json({
-            accountCategories: fetchedAccountCategories,
-            maxAccountCategories: count
-        });
+        dataSourceResult.toDataSourceResult(fetchedAccountCategories);
+        res.status(200).json(
+            dataSourceResult
+            // accountCategories: fetchedAccountCategories,
+            // maxAccountCategories: count
+        );
     }).catch(err => {
         res.status(500).json({
             message: err.message

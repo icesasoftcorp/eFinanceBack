@@ -1,4 +1,7 @@
 const Account = require('../models/account');
+const DataSourceResult = require('../models/DataSourceResult');
+let dataSourceResult = new DataSourceResult();
+
 
 /**
  * Creates account
@@ -17,11 +20,11 @@ exports.createAccount = (req, res, next) => {
     account.save().then(income => {
         res.status(201).json({
             account: {
-                ... account,
+                ...account,
                 id: account._id,
             }
         });
-    }).catch( err => {
+    }).catch(err => {
         res.status(500).json({
             message: err.message
         })
@@ -30,15 +33,13 @@ exports.createAccount = (req, res, next) => {
 
 
 exports.deleteAccount = (req, res, next) => {
-    const accountQuery = Account.findByDelete(req.userData.userId);
-    const account = Account(accountQuery);
-    account.then(result => {
-        res.status(201).json({
+    Account.findByIdAndDelete({ _id: req.body.id }).then(result => {
+        res.status(200).json({
             account: {
-            message: "Account has been deleted",
+                message: "Account has been deleted",
             }
         });
-    }).catch( err => {
+    }).catch(err => {
         res.status(500).json({
             message: err.message
         })
@@ -55,26 +56,30 @@ exports.retrieveAccounts = (req, res, next) => {
     const pageSize = + req.query.pageSize;
     const currentPage = + req.query.page;
     const fieldSort = req.query.sort;
-    let arraySort=(fieldSort != undefined ? fieldSort : " ").split("~");
-    let sortJson={};
-    arraySort.forEach(e=>{
-        let arrayPrmSort=e.split("-");
-        let sortType = arrayPrmSort[1] == "asc" ? 1:-1;
-        sortJson[arrayPrmSort[0]] = sortType;
+    let arraySort = (fieldSort != undefined ? fieldSort : "").split("~");
+    let sortJson = {};
+    arraySort.forEach(e => {
+        if (e != '') {
+            let arrayPrmSort = e.split("-");
+            let sortType = arrayPrmSort[1] == "asc" ? 1 : -1;
+            sortJson[arrayPrmSort[0]] = sortType;
+        }
     });
     const accountQuery = Account.findByCreator(req.userData.userId).sort(sortJson);
     let fetchedAccounts;
     if (currentPage && pageSize) {
-       accountQuery.skip(pageSize *(currentPage - 1)).limit(pageSize);
+        accountQuery.skip(pageSize * (currentPage - 1)).limit(pageSize);
     }
-   accountQuery.then( documents => {
+    accountQuery.then(documents => {
         fetchedAccounts = documents;
         return Account.findByCreator(req.userData.userId).count();
     }).then(count => {
-        res.status(200).json({
-            accounts: fetchedAccounts,
-            maxAccounts: count
-        });
+        dataSourceResult.toDataSourceResult(fetchedAccounts);
+        res.status(200).json(
+            dataSourceResult
+            // accounts: fetchedAccounts,
+            // maxAccounts: count
+        );
     }).catch(err => {
         res.status(500).json({
             message: err.message

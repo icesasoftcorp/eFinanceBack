@@ -8,6 +8,6 @@ const AccountsController = require('../controllers/account');
  */
  router.post('', checkAuth, AccountsController.createAccount);
  router.get('', checkAuth, AccountsController.retrieveAccounts);
- router.post('/deleteAccount', checkAuth, AccountsController.deleteAccount);
+ router.post('/remove', checkAuth, AccountsController.deleteAccount);
  
  module.exports = router;
