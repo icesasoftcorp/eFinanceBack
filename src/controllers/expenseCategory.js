@@ -1,5 +1,6 @@
 const ExpenseCategory = require('../models/expenseCategory');
-
+const DataSourceResult = require('../models/DataSourceResult');
+let dataSourceResult = new DataSourceResult();
 /**
  * Creates account category
  * @param {*} req 
@@ -14,12 +15,8 @@ exports.createExpenseCategory = (req, res, next) => {
         creator: req.userData.userId ? req.userData.userId : null
     });
     expenseCategory.save().then(expenseCategory => {
-        res.status(201).json({
-            expenseCategory: {
-                ...expenseCategory,
-                id: expenseCategory._id,
-            }
-        });
+        dataSourceResult.toDataSourceResult(expenseCategory);
+        res.status(201).json(dataSourceResult);
     }).catch(err => {
         res.status(500).json({
             message: err.message
@@ -55,10 +52,8 @@ exports.retrieveExpenseCategories = (req, res, next) => {
         fetchedExpenseCategories = documents;
         return ExpenseCategory.count();
     }).then(count => {
-        res.status(200).json({
-            expenseCategories: fetchedExpenseCategories,
-            maxExpenseCategories: count
-        });
+        dataSourceResult.toDataSourceResult(fetchedExpenseCategories);
+        res.status(200).json(dataSourceResult);
     }).catch(err => {
         res.status(500).json({
             message: err.message
@@ -75,10 +70,8 @@ exports.retrieveExpenseCategories = (req, res, next) => {
 exports.removeExpenseCategories = (req, res, next) => {
     const id = req.body.id;
     ExpenseCategory.findByIdAndDelete({ _id: id }).then(data => {
-        res.status(200).json({
-            expense: data,
-            id: expense._id
-        });
+        dataSourceResult.toDataSourceResult(data);
+        res.status(200).json(dataSourceResult);
     }).catch(err => {
         res.status(500).json({
             message: err.message
