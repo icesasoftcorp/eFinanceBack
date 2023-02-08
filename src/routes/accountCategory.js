@@ -7,6 +7,7 @@ const AccountCategoryController = require('../controllers/accountCategory');
  * API routes for account categories
  */
  router.post('', checkAuth, AccountCategoryController.createAccountCategory);
- router.get('', AccountCategoryController.retrieveAccountCategories);
- 
+ router.get('', checkAuth,AccountCategoryController.retrieveAccountCategories);
+ router.post('/remove', checkAuth,AccountCategoryController.deleteAccountCategory);
+
  module.exports = router;

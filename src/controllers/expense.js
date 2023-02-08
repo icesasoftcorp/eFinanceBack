@@ -1,5 +1,6 @@
 const Expense = require('../models/expense');
-
+const DataSourceResult = require('../models/DataSourceResult');
+let dataSourceResult = new DataSourceResult();
 /**
  * Creates an income
  * @param {*} req request
@@ -16,12 +17,8 @@ exports.createExpense = (req, res, next) => {
         creator: req.userData.userId
     });
     expense.save().then(expense => {
-        res.status(201).json({
-            expense: {
-                ...expense,
-                id: expense._id,
-            }
-        });
+        dataSourceResult.toDataSourceResult(expense);
+        res.status(201).json(dataSourceResult);
     }).catch(err => {
         res.status(500).json({
             message: err.message
@@ -60,11 +57,15 @@ exports.retrieveExpenses = (req, res, next) => {
         fetchedExpenses = documents;
         return Expense.find({ creator: req.userData.userId, $lt: monthBeginning }).count();
     }).then(count => {
-        res.status(200).json({
-            expenses: fetchedExpenses,
-            maxExpenses: count,
-            since: monthBeginning
-        });
+        dataSourceResult.toDataSourceResult(fetchedExpenses)
+        res.status(200).json(
+            dataSourceResult
+            // {
+            //     expenses: fetchedExpenses,
+            //     maxExpenses: count,
+            //     since: monthBeginning
+            // }
+        );
     }).catch(err => {
         res.status(500).json({
             message: err.message
@@ -80,10 +81,8 @@ exports.retrieveExpenses = (req, res, next) => {
 exports.removeExpense = (req, res, next) => {
     const id = req.body.id;
     Expense.findByIdAndDelete({ _id: id }).then(data => {
-        res.status(200).json({
-            expense: data,
-            id: expense._id
-        });
+        dataSourceResult.toDataSourceResult(data)
+        res.status(200).json(dataSourceResult);
     }).catch(err => {
         res.status(500).json({
             message: err.message

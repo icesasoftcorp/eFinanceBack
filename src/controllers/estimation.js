@@ -1,4 +1,6 @@
 const Estimation = require('../models/estimation');
+const DataSourceResult = require('../models/DataSourceResult');
+let dataSourceResult = new DataSourceResult();
 
 /**
  * Creates estimation
@@ -43,11 +45,13 @@ exports.retrieveEstimations = (req, res, next) => {
         fetchedEstimations = documents;
         return Estimation.find({creator: req.userData.userId, $lt: monthBeginning}).count();
     }).then(count => {
-        res.status(200).json({
-            estimations: fetchedEstimations,
-            maxEstimations: count,
-            since: monthBeginning
-        });
+        dataSourceResult.toDataSourceResult(fetchedEstimations);
+        res.status(200).json(
+            dataSourceResult
+            // estimations: fetchedEstimations,
+            // maxEstimations: count,
+            // since: monthBeginning
+        );
     }).catch(err => {
         res.status(500).json({
             message: err.message
@@ -62,8 +66,7 @@ exports.deleteEstimation = (req, res, next) => {
     const { id } = req.body;
     Estimation.findByIdAndDelete({ _id: id })
       .then((deleteEstimation) => {
-      //   console.log('deleteEstimation', deleteEstimation);
-        res.status(201).json({
+        res.status(200).json({
           message: 'The record has been deleted',
           result: deleteEstimation,
         });
