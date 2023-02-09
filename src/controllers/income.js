@@ -10,25 +10,47 @@ let dataSourceResult = new DataSourceResult();
  */
 exports.createIncome = (req, res, next) => {
     // const url = req.protocol + "://" + req.get("host"); 
-    const income = new Income({
-        title: req.body.title,
-        description: req.body.description,
-        amount: req.body.amount,
-        category: req.body.category,
-        account: req.body.account,
-        creator: req.userData.userId,
-    });
-    income.save().then(data => {
-        console.log(data);
-        res.status(201).json({
-            Data: data,
-            id: data._id,
+    if (req.body._id) {
+        const income = Income({
+            title: req.body.title,
+            description: req.body.description,
+            amount: req.body.amount,
+            category: req.body.category,
+            account: req.body.account,
+            creator: req.userData.userId,
+            _id:req.body._id
         });
-    }).catch(err => {
-        res.status(500).json({
-            message: err.message
-        })
-    });
+        const options = { upsert: false };
+        income.updateOne(income,options).then((data) => {
+            res.status(200).json({
+                Data: data,
+                id: data._id,
+            });
+        }).catch(err => {
+            res.status(500).json({
+                message: err.message
+            })
+        });
+    } else {
+        const income = new Income({
+            title: req.body.title,
+            description: req.body.description,
+            amount: req.body.amount,
+            category: req.body.category,
+            account: req.body.account,
+            creator: req.userData.userId,
+        });
+        income.save().then(data => {
+            res.status(201).json({
+                Data: data,
+                id: data._id,
+            });
+        }).catch(err => {
+            res.status(500).json({
+                message: err.message
+            })
+        });
+    }
 };
 
 /**
