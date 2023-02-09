@@ -58,7 +58,6 @@ exports.createUser =  (req, res, next) => {
             process.env.JWT_KEY,
             {expiresIn: '1h'}
         );
-        console.log(fetchUser);
         res.status(200).json({
             token: token,
             expiresIn: 3600,

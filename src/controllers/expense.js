@@ -8,22 +8,45 @@ let dataSourceResult = new DataSourceResult();
  * @param {*} next 
  */
 exports.createExpense = (req, res, next) => {
-    const expense = new Expense({
-        title: req.body.title,
-        description: req.body.description,
-        amount: req.body.amount,
-        category: req.body.category,
-        account: req.body.account,
-        creator: req.userData.userId
-    });
-    expense.save().then(expense => {
-        dataSourceResult.toDataSourceResult(expense);
-        res.status(201).json(dataSourceResult);
-    }).catch(err => {
-        res.status(500).json({
-            message: err.message
-        })
-    });
+    if (req.body._id) {
+        const expense = new Expense({
+            title: req.body.title,
+            description: req.body.description,
+            amount: req.body.amount,
+            category: req.body.category,
+            account: req.body.account,
+            creator: req.userData.userId ? req.userData.userId : null,
+            _id: req.body._id
+        });
+        const options = { upsert: false };
+        expense.updateOne(expense, options).then((data) => {
+            res.status(200).json({
+                Data: data,
+                id: data._id,
+            });
+        }).catch(err => {
+            res.status(500).json({
+                message: err.message
+            })
+        });
+    } else {
+        const expense = new Expense({
+            title: req.body.title,
+            description: req.body.description,
+            amount: req.body.amount,
+            category: req.body.category,
+            account: req.body.account,
+            creator: req.userData.userId
+        });
+        expense.save().then(expense => {
+            dataSourceResult.toDataSourceResult(expense);
+            res.status(201).json(dataSourceResult);
+        }).catch(err => {
+            res.status(500).json({
+                message: err.message
+            })
+        });
+    }
 };
 
 /**

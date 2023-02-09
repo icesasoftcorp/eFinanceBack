@@ -10,25 +10,47 @@ let dataSourceResult = new DataSourceResult();
  * @param {*} next 
  */
 exports.createAccount = (req, res, next) => {
-    const account = new Account({
-        name: req.body.name,
-        color: req.body.color,
-        amount: req.body.amount,
-        category: req.body.category,
-        creator: req.userData.userId ? req.userData.userId : null
-    });
-    account.save().then(income => {
-        res.status(201).json({
-            account: {
-                ...account,
-                id: account._id,
-            }
+    if (req.body._id) {
+        const account = new Account({
+            name: req.body.name,
+            color: req.body.color,
+            amount: req.body.amount,
+            category: req.body.category,
+            creator: req.userData.userId ? req.userData.userId : null,
+            _id: req.body._id
         });
-    }).catch(err => {
-        res.status(500).json({
-            message: err.message
-        })
-    });
+        const options = { upsert: false };
+        account.updateOne(account, options).then((data) => {
+            res.status(200).json({
+                Data: data,
+                id: data._id,
+            });
+        }).catch(err => {
+            res.status(500).json({
+                message: err.message
+            })
+        });
+    } else {
+        const account = new Account({
+            name: req.body.name,
+            color: req.body.color,
+            amount: req.body.amount,
+            category: req.body.category,
+            creator: req.userData.userId ? req.userData.userId : null
+        });
+        account.save().then(income => {
+            res.status(201).json({
+                account: {
+                    ...account,
+                    id: account._id,
+                }
+            });
+        }).catch(err => {
+            res.status(500).json({
+                message: err.message
+            })
+        });
+    }
 }
 
 
