@@ -10,6 +10,7 @@ let dataSourceResult = new DataSourceResult();
  * @param {*} next 
  */
 exports.createAccount = (req, res, next) => {
+    console.log(req.body);
     if (req.body._id) {
         const account = new Account({
             name: req.body.name,
@@ -31,6 +32,7 @@ exports.createAccount = (req, res, next) => {
             })
         });
     } else {
+        console.log('aqui');
         const account = new Account({
             name: req.body.name,
             color: req.body.color,
@@ -55,12 +57,13 @@ exports.createAccount = (req, res, next) => {
 
 
 exports.deleteAccount = (req, res, next) => {
-    Account.findByIdAndDelete({ _id: req.body.id }).then(result => {
+    console.log(req.body)
+    Account.findByIdAndDelete({ _id: req.body.id }).then(data => {
         res.status(200).json({
-            account: {
-                message: "Account has been deleted",
-            }
+            data,
+            id:data._id
         });
+
     }).catch(err => {
         res.status(500).json({
             message: err.message
